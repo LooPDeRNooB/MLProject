@@ -93,6 +93,28 @@ def evaluate_model(model, X_test, Y_test):
     return accuracy
 
 
+def show_data(X_test, Y_test, model, model_name="Unknown Model"):
+
+    Y_pred = model.predict(X_test);
+
+    Y_pred_scalar = np.argmax(Y_pred, axis=1) ;
+    Y_test_scalar = Y_test.argmax(axis=1) ;
+
+    cm_helper = np.zeros([Y_test.shape[1],Y_test.shape[1],X_test.shape[0]]) ;
+    cm_helper[Y_test_scalar,Y_pred_scalar,range(0,X_test.shape[0])] = 1 ;
+    
+    # reduce away the artificial axis from the helper matrix to obtain the CM
+    cm = cm_helper.sum(axis=2) ;
+    
+    plt.title(f"Confusion Matrix on Test Data - {model_name}")
+    plt.xlabel("Prediction")
+    plt.ylabel("True Labels")
+
+    # display
+    plt.imshow(cm) ;
+    plt.show()
+
+
 
 if __name__ == "__main__":
     
@@ -119,24 +141,27 @@ if __name__ == "__main__":
     X_train, X_test, Y_train, Y_test = train_test_split(images, labels, train_size=0.8)
 
     if mode == "train":
+        epochs = 10;
+        batch_size = 128;
+
         # Create and train simple dnn
         print("Training Simple DNN...")
 
         dnn_model = create_simple_dnn((img_height, img_width, img_channels), num_classes)
-        train_model(dnn_model, X_train, Y_train, epochs=10, batch_size=128)
+        train_model(dnn_model, X_train, Y_train, epochs=epochs, batch_size=batch_size)
         dnn_model.save("./models/dnn_model.keras")
 
         # Create and train LeNet-5 CNN
         print("Training LeNet-5 CNN...")
         
         cnn_model = create_lenet5_cnn((img_height, img_width, img_channels), num_classes)
-        train_model(cnn_model, X_train, Y_train, epochs=10, batch_size=128)
+        train_model(cnn_model, X_train, Y_train, epochs=epochs, batch_size=batch_size)
         cnn_model.save("./models/cnn_model.keras")
 
     elif mode == "test":
         # Load pre-trained model
-        dnn_model = models.load_model("dnn_model.keras")
-        cnn_model = models.load_model("cnn_model.keras")
+        dnn_model = models.load_model("./models/dnn_model.keras")
+        cnn_model = models.load_model("./models/cnn_model.keras")
 
         # Evaluate models on test data
         dnn_accuracy = evaluate_model(dnn_model, X_test, Y_test)
@@ -145,5 +170,5 @@ if __name__ == "__main__":
         print(f"Simple DNN Accuracy: {dnn_accuracy:.4f}")
         print(f"LeNet-5 CNN Accuracy: {cnn_accuracy:.4f}")
 
-        # show_data(X_test, Y_test, dnn_model, "Simple DNN")
-        # show_data(X_test, Y_test, cnn_model, "LeNet-5 CNN")
+        show_data(X_test, Y_test, dnn_model, "Simple DNN")
+        show_data(X_test, Y_test, cnn_model, "LeNet-5 CNN")
