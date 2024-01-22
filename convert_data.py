@@ -3,16 +3,35 @@ import os;
 import numpy as np ;
 from PIL import Image;
 
-def balanceData(label_data, numSamples):
-    labels = np.unique(label_data)
+def balanceData(input_data, input_labels, numSamples):
+    labels = np.unique(input_labels)
+    num_labels = len(labels)
     sample_indices = [];
 
+    # list for out output data
+    output_data = []
+    output_labels = []
     for label in labels:
-        indices = np.where(label_data == label)
-        print(indices.count());
-        sample_indices.append(np.random.choice(indices, numSamples, True))
+        indices = np.where(input_labels == label)[0]
+        sample_indices.extend(np.random.choice(indices, size=numSamples))
 
-    return np.random.shuffle(sample_indices);
+        #build labels in one hot foramt
+        label_OneHot = np.zeros(num_labels)
+        label_OneHot[label] = 1
+        labels_samples = [label_OneHot] * numSamples
+
+        output_labels.extend(labels_samples)
+
+    output_data = input_data[sample_indices];
+
+    random_order = np.arange(0, num_labels * numSamples)
+    np.random.shuffle(random_order)
+    # and applying it on our outputs (fancy indexing)
+    output_data_r = output_data[random_order]
+    output_labels = np.array(output_labels)
+    output_labels_r = output_labels[random_order]
+
+    return output_data_r, output_labels_r
     
 if __name__ == "__main__":
 
@@ -49,7 +68,6 @@ if __name__ == "__main__":
         
         #extract the labels
         image_label = int(file_name.split("-")[0])
-        print(image_label)
 
         # Build dictionary
         if image_label in numSamples:
@@ -63,10 +81,10 @@ if __name__ == "__main__":
 
     image_data = np.array(image_data)
     image_labels = np.array(image_labels);
-    print(numSamples);
 
-    indices = balanceData(image_labels, 6000);
+    balanced_data, balanced_labels = balanceData(image_data, image_labels, 6000);
 
-    # Save the numpy array as an npz file
-    np.savez(npzFileName, image_data[indices], image_labels[indices])
+    # Save the numpy array as an npz 
+    np.savez(npzFileName, balanced_data, balanced_labels)
+    # np.savez(npzFileName, image_data[indices], image_labels[indices])
 
