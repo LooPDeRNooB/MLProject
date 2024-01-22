@@ -35,15 +35,13 @@ def balanceData(input_data, input_labels, numSamples):
     
 if __name__ == "__main__":
 
-    imgPath = "./";
-    npzFileName = "data.npz";
-
     #Check sys.args
     if len(sys.argv) != 3:
         print("Usage: convert_data.py <path_to_images> <filename.npz>");
-    else:
-        imgPath = sys.argv[1];
-        npzFileName = sys.argv[2];
+        exit(1);
+        
+    imgPath = sys.argv[1];
+    npzFileName = sys.argv[2];
 
     #Data analysis and preprocessing
 
