@@ -4,8 +4,6 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from keras import layers, models
 
 def load_data(npz_path):
@@ -89,7 +87,11 @@ def evaluate_model(model, X_test, Y_test):
     Y_pred = model.predict(X_test)
     Y_pred_classes = np.argmax(Y_pred, axis=1)
     Y_test_classes = np.argmax(Y_test, axis=1)
-    accuracy = accuracy_score(Y_test_classes, Y_pred_classes)
+
+    correct = np.sum(Y_pred_classes == Y_test_classes);
+    total = Y_test.shape[0];
+    accuracy = correct / total;
+
     return accuracy
 
 
